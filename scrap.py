@@ -9,72 +9,73 @@ from bs4 import BeautifulSoup
 
 
 def scrap_all():
-    """ Sauvegarde l'ensenmble des données de tous les livres du site dans un
-    fichier csv au nom de la catégorie """
+    """
+    - Sauvegarde l'ensenmble des données de tous les livres dans un
+    fichier csv au nom de la catégorie.
+    - Sauvegarde des images de couverture
+    """
 
     data = []
-    a_list = []
-
+    a_list = []  
     url_site = "https://books.toscrape.com"
 
     os.makedirs("data", exist_ok=True)
-    directory = os.path.dirname(__file__)  # wd
-    path_to_file = directory + "/" + "data"
+    path = os.path.dirname(__file__) + "/" + "data"  # path du répertoire d'enregistrement
    
     response = requests.get(url_site)
     response.encoding = 'utf-8'
     soup = BeautifulSoup(response.text, "lxml")
 
-    url_nav = soup.find('ul', {"class": "nav nav-list"})
-    
+    url_nav = soup.find('ul', {"class": "nav nav-list"})   
     a_list = url_nav.findAll('a')
     a_list = a_list[1:len(url_nav.findAll('a'))]  # supprime l'item "Books" de la liste
-    # a_list = a_list[:2] sous liste de 2 element pour diminuer la durée des tests
-    
+    #a_list = a_list[:2]  # sous-liste pour diminuer la durée des tests
     for cat in a_list:
-        cat_data = cat.text.replace('\n', '').strip()  # nom categorie
+        cat_name = cat.text.replace('\n', '').strip()  # nom categorie
+        path_data = path + '/' + cat_name  # chemin du dossier au nom de la catégorie
 
-        os.makedirs(path_to_file + '/' + cat_data, exist_ok=True)  # creation dossier data/nom catégorie
-        os.makedirs(path_to_file + '/' + cat_data + '/' + cat_data + "_image", exist_ok=True) # creation dossier image catégorie
-        
+        os.makedirs(path_data, exist_ok=True)  # creation dossier nom catégorie
+        os.makedirs(path_data + '/' + cat_name + "_image", exist_ok=True)  # creation du sous-dossier image catégorie
+
         data = scrapcategory.scrap_category(url_site + '/' + cat['href'])  # datas d'une categorie livre
         
-        # sauvegarde dans le fichier cat_data.csv
-        csv_file(cat_data, path_to_file, data)
-        
-        # Téléchargement de l'image
-        img_file(cat_data, path_to_file, data)
-       
+        # sauvegarde dans le fichier cat_name.csv
+        record_file(cat_name, path_data, data)
 
-def csv_file(cat_data: str, path_to_file: str, data: list):
-    cat_data = path_to_file + "/" + cat_data + "/" + cat_data + ".csv"
-    with open(cat_data, 'w', encoding="utf-8", newline='') as csvfile:
-        order = ["title",
-                 "product_description",
-                 "universal_product_code (upc)",
-                 "price_including_tax",
-                 "price_excluding_tax",
-                 "number_available",
-                 "review_rating",
-                 "product_page_url",
-                 "image_url"] 
-        writer = csv.DictWriter(csvfile, dialect='excel-tab', fieldnames= order)
+
+def record_file(cat_name: str, path_data: str, data: list):
+    """ Enregistrement des données dans le fichier 'categorie.csv'
+        et téléchargement des images dans le sous dossier 'categorie_image' """
+    print(cat_name)
+    cat_image = path_data + '/' + cat_name + "_image"
+    csv_data = path_data + "/" + cat_name + ".csv"
+  
+    separator = '\t'
+    quote = "'"
+    with open(csv_data, 'w', encoding="utf-8", newline='') as csvfile:
+        fieldorder = ["title",
+                      "product_description",
+                      "universal_product_code (upc)",
+                      "price_including_tax",
+                      "price_excluding_tax",
+                      "number_available",
+                      "review_rating",
+                      "product_page_url",
+                      "image_url"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldorder,
+                                delimiter=separator,
+                                quotechar=quote)
         writer.writeheader()
+        i = 1
         for line in data:
             writer.writerow(line)
-
-
-def img_file(cat_data: str, path_to_file: str, data: list):
-    cat_image = path_to_file + '/' + cat_data + '/' + cat_data + "_image" 
-    
-    for line in data:
-        image_url = line["image_url"]
-        image_title = line["title"].replace(':','_').replace(' ', '_') + '.jpg'
-        file_name = cat_image + '/' + image_title
-        print(file_name)
-        resp_image = requests.get(image_url)
-        with open(file_name, 'wb') as picfile:
-            picfile.write(resp_image.content)
+            # telechargement de l'image
+            image_url = line["image_url"]
+            file_name = cat_image + '/' + 'image_' + str(i) + '.jpg'
+            resp_image = requests.get(image_url)
+            with open(file_name, 'wb') as picfile:
+                picfile.write(resp_image.content)
+            i += 1
 
 
 def main():
