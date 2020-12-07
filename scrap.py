@@ -29,7 +29,7 @@ def scrap_all():
     url_nav = soup.find('ul', {"class": "nav nav-list"})   
     a_list = url_nav.findAll('a')
     a_list = a_list[1:len(url_nav.findAll('a'))]  # supprime l'item "Books" de la liste
-    #a_list = a_list[:1]  # sous-liste pour diminuer la durée des tests
+    a_list = a_list[:1]  # sous-liste pour diminuer la durée des tests
     for cat in a_list:
         cat_name = cat.text.replace('\n', '').strip()  # nom categorie
         path_data = path + '/' + cat_name  # chemin du dossier au nom de la catégorie
@@ -72,7 +72,7 @@ def record_file(cat_name: str, path_data: str, data: list):
             # telechargement de l'image
             image_url = line["image_url"]
             file_name = cat_image + '/' + 'image_' + str(i) + '.jpg'
-            line["image"] = file_name
+            line["image"] = "data" + '/' + cat_name + '/' + cat_name + "_image" + '/' + 'image_' + str(i) + '.jpg'
             resp_image = requests.get(image_url)
             with open(file_name, 'wb') as picfile:
                 picfile.write(resp_image.content)
