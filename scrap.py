@@ -29,7 +29,7 @@ def scrap_all():
     url_nav = soup.find('ul', {"class": "nav nav-list"})   
     a_list = url_nav.findAll('a')
     a_list = a_list[1:len(url_nav.findAll('a'))]  # supprime l'item "Books" de la liste
-    #a_list = a_list[:2]  # sous-liste pour diminuer la durée des tests
+    #a_list = a_list[:1]  # sous-liste pour diminuer la durée des tests
     for cat in a_list:
         cat_name = cat.text.replace('\n', '').strip()  # nom categorie
         path_data = path + '/' + cat_name  # chemin du dossier au nom de la catégorie
@@ -61,20 +61,22 @@ def record_file(cat_name: str, path_data: str, data: list):
                       "number_available",
                       "review_rating",
                       "product_page_url",
-                      "image_url"]
+                      "image_url",
+                      "image"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldorder,
                                 delimiter=separator,
                                 quotechar=quote)
         writer.writeheader()
         i = 1
         for line in data:
-            writer.writerow(line)
             # telechargement de l'image
             image_url = line["image_url"]
             file_name = cat_image + '/' + 'image_' + str(i) + '.jpg'
+            line["image"] = file_name
             resp_image = requests.get(image_url)
             with open(file_name, 'wb') as picfile:
                 picfile.write(resp_image.content)
+            writer.writerow(line)
             i += 1
 
 
