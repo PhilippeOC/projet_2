@@ -22,26 +22,24 @@ def scrap_all():
 
     a_list = soup.find('ul', {"class": "nav nav-list"}).findAll('a')  # scrap les balises <a> du menu des catégories
     a_list = a_list[1:len(a_list)]  # supprime l'item "Books" de la liste
-    #a_list = a_list[:1]  # TD sous-liste pour diminuer la durée des tests
 
     os.makedirs(csts.PATH_DATA, exist_ok=True) 
-    os.makedirs(csts.PATH_DATA + "/csv", exist_ok=True)
-    os.makedirs(csts.PATH_DATA + "/img", exist_ok=True)
+    os.makedirs(csts.PATH_DATA_CSV, exist_ok=True)
+    os.makedirs(csts.PATH_DATA_IMG, exist_ok=True)
     
-    num_img = 1
-    for cat in a_list:
-        cat_name = cat.text.replace('\n', '').strip()  # nom de la categorie
-        print("Catégorie en cours:", cat_name)
+    for num_cat, cat in enumerate(a_list):
         data = scrapcategory.scrap_category(csts.URL_SITE + '/' + cat['href'])  # données d'une categorie de livres
-        for img in data:
-            resp_image = utils.requests_error(img["image_url"])
-            img["image_url"] = "data/img/image_" + str(num_img) + ".jpg"
-            # sauvegarde des images de la catégorie
-            with open(csts.PATH_DATA + "/img/image_" + str(num_img) + ".jpg", 'wb') as picfile:
-                picfile.write(resp_image.content)
-            num_img += 1
+        print("Catégorie en cours:", data[0])
         
-        utils.record_csv(csts.PATH_DATA + "/csv", cat_name, data)
+        # sauvegarde des images de la catégorie
+        for num_img, img in enumerate(data[1:]):
+            resp_image = utils.requests_error(img["image_url"])
+            img_name = "/cat_" + str(num_cat + 1) + "_image_" + str(num_img + 1) + ".jpg"
+            img["image_url"] = "data/img" + img_name
+            with open(csts.PATH_DATA_IMG + img_name, 'wb') as picfile:
+                picfile.write(resp_image.content)
+        
+        utils.record_csv(csts.PATH_DATA_CSV, data[0], data[1:])
 
 
 def main():
