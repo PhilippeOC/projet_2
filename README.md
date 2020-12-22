@@ -34,6 +34,9 @@ Le projet est composé de cinq fichiers
         * pour afficher l'aide, utiliser la commande:  python scrapcategory.py -h
 - Pour lancer le programme scrap.py taper la commande: python scrap.py 
 
+* Remarque: la tabulation est utilisée comme séparateur dans les fichiers csv
+
+
 
 
 
