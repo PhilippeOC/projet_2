@@ -34,9 +34,9 @@ def scrap_all():
         # sauvegarde des images de la catégorie
         for num_img, img in enumerate(data[1:]):
             resp_image = utils.requests_error(img["image_url"])
-            img_name = "/cat_" + str(num_cat + 1) + "_image_" + str(num_img + 1) + ".jpg"
-            img["image_url"] = "data/img" + img_name
-            with open(csts.PATH_DATA_IMG + img_name, 'wb') as picfile:
+            img_name = "cat_" + str(num_cat + 1) + "_image_" + str(num_img + 1) + ".jpg"
+            img["image_url"] = os.path.join("data/img", img_name)
+            with open(os.path.join(csts.PATH_DATA_IMG, img_name), 'wb') as picfile:
                 picfile.write(resp_image.content)
         
         utils.record_csv(csts.PATH_DATA_CSV, data[0], data[1:])
